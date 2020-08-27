@@ -1,0 +1,22 @@
+FROM ubuntu:latest 
+
+ENV version 1.4.1 
+
+RUN apt-get update \
+	&& apt-get -y install wget make bzip2 libbz2-dev liblzma-dev libncurses-dev git build-essential libz-dev cmake \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN cd /tmp/ \
+  	&& git clone --recursive git://github.com/ekg/freebayes.git \
+	&& cd freebayes \
+	&& make \
+	&& cd bin/ \
+	&& chmod 750 freebayes \
+	&& mv freebayes /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/freebayes-bash.sh && chmod 700 freebayes-bash.sh
+ENTRYPOINT ["freebayes-bash.sh"]

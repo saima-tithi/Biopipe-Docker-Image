@@ -1,0 +1,22 @@
+FROM ubuntu:latest 
+
+ENV version 1.4.1 
+
+RUN apt-get update \
+	&& apt-get -y install wget make bzip2 libbz2-dev liblzma-dev libncurses-dev libboost-all-dev git build-essential libz-dev cmake \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN cd /tmp/ \
+	&& wget https://github.com/samtools/samtools/releases/download/${version}/samtools-${version}.tar.bz2 \
+	&& tar xjvf samtools-${version}.tar.bz2 \
+	&& cd samtools-${version}/ \
+	&& ./configure \
+	&& make \
+	&& mv samtools /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/samtools-bash.sh && chmod 700 samtools-bash.sh
+ENTRYPOINT ["samtools-bash.sh"]

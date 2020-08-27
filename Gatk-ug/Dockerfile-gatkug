@@ -1,0 +1,19 @@
+FROM java:openjdk-8-jre
+
+RUN apt-get update \
+	&& apt-get -y install wget \
+	&& rm -rf /var/lib/apt/lists/*
+
+RUN cd /tmp/ \
+	&& wget https://software.broadinstitute.org/gatk/download/auth?package=GATK -O GenomeAnalysisTK.tar.bz2 \
+	&& tar xvjf GenomeAnalysisTK.tar.bz2 \
+	&& cd GenomeAnalysisTK-3.8-0-ge9d806836/ \
+	&& cp GenomeAnalysisTK.jar /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/gatkug-bash.sh && chmod 700 gatkug-bash.sh
+ENTRYPOINT ["gatkug-bash.sh"]
+

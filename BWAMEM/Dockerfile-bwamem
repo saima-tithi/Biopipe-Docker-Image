@@ -1,0 +1,17 @@
+FROM ubuntu:latest
+
+RUN apt-get update \
+	&& apt-get -y install make git libz-dev gcc wget \
+	&& rm -rf /var/lib/apt/lists/*
+RUN cd /tmp/ \
+	&& git clone https://github.com/lh3/bwa.git \
+	&& cd bwa \
+	&& make \
+	&& mv bwa /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/bwamem-bash.sh && chmod 700 bwamem-bash.sh
+ENTRYPOINT ["bwamem-bash.sh"]

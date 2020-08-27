@@ -1,0 +1,34 @@
+FROM ubuntu:latest
+
+ENV version 2.3.2 
+
+RUN apt-get update && apt-get install -y gcc g++ make perl default-jre python \
+                                       wget git unzip curl libdb-dev \
+                                       zlib1g-dev bzip2 libncurses5-dev \				       
+				       build-essential libghc-zlib-dev libncurses-dev libbz2-dev liblzma-dev libpcre3-dev libxml2-dev \
+				       libcurl4-openssl-dev libx11-dev libxt-dev \
+                   && apt-get clean
+
+RUN cd /home/ \
+	&& git clone https://github.com/trinityrnaseq/trinityrnaseq.git \
+	&& cd trinityrnaseq \
+    	&& make \
+	&& cd /usr/local/bin/ \
+        && ln -s /home/trinityrnaseq/Trinity .
+
+RUN cd /tmp/ \
+	&& wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.2/bowtie2-${version}-linux-x86_64.zip \
+	&& unzip bowtie2-2.3.2-linux-x86_64.zip \
+	&& rm -rf bowtie2-2.3.2-linux-x86_64.zip \
+	&& cd bowtie2-2.3.2/ \
+	&& mv bowtie2* /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin \ 
+	&& wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/Trinity-GenomeGuided-bash.sh \
+	&& chmod 700 Trinity-GenomeGuided-bash.sh
+ENTRYPOINT ["Trinity-GenomeGuided-bash.sh"]
+

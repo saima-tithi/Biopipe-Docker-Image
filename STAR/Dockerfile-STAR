@@ -1,0 +1,20 @@
+FROM ubuntu:latest 
+
+#https://github.com/alexdobin/STAR
+
+RUN apt-get update \
+	&& apt-get -y install make g++ wget git bzip2 libbz2-dev liblzma-dev libncurses-dev git build-essential libz-dev \
+	&& rm -rf /var/lib/apt/lists/*
+	
+RUN cd /tmp/ \
+	&& git clone https://github.com/alexdobin/STAR.git \
+	&& cd STAR/source \
+	&& make STAR \
+	&& mv STAR /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/STAR-bash.sh && chmod 700 STAR-bash.sh
+ENTRYPOINT ["STAR-bash.sh"]

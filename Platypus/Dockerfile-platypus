@@ -1,0 +1,36 @@
+FROM ubuntu:latest
+
+RUN apt-get update && apt-get -y install build-essential \
+			python-dev \
+			python-pip \
+			git \
+			wget \
+			autoconf \
+			zlib1g-dev
+# Install htslib
+RUN wget https://github.com/samtools/htslib/releases/download/1.3/htslib-1.3.tar.bz2
+RUN tar xjf htslib-1.3.tar.bz2
+RUN cd htslib-1.3 && autoconf && ./configure && make && make install
+
+# Install Cython
+RUN pip install cython
+
+ENV C_INCLUDE_PATH /usr/local/include
+ENV LIBRARY_PATH /usr/local/lib
+ENV LD_LIBRARY_PATH /usr/local/lib
+
+RUN cd /tmp/ \
+	&& git clone https://github.com/andyrimmer/Platypus.git \
+	&& cd Platypus \
+	&& make \
+	&& cp -r bin/ /opt/ \
+	&& cd /opt/bin/ \
+	&& chmod +x Platypus.py \
+	&& export PATH=$PATH:/opt/bin
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/platypus-bash.sh && chmod 700 platypus-bash.sh
+ENTRYPOINT ["platypus-bash.sh"]

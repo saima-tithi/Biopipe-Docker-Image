@@ -1,0 +1,20 @@
+FROM ubuntu:latest 
+
+ENV version 2.3.2 
+
+RUN apt-get update \
+	&& apt-get -y install unzip wget libtbb-dev python \
+	&& rm -rf /var/lib/apt/lists/*
+RUN cd /tmp/ \
+	&& wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.2/bowtie2-${version}-linux-x86_64.zip \
+	&& unzip bowtie2-2.3.2-linux-x86_64.zip \
+	&& rm -rf bowtie2-2.3.2-linux-x86_64.zip \
+	&& cd bowtie2-2.3.2/ \
+	&& mv bowtie2* /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/bowtie2-bash.sh && chmod 700 bowtie2-bash.sh
+ENTRYPOINT ["bowtie2-bash.sh"]

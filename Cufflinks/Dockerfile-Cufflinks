@@ -1,0 +1,26 @@
+FROM ubuntu:latest 
+
+#https://github.com/cole-trapnell-lab/cufflinks
+#http://cole-trapnell-lab.github.io/cufflinks/install
+
+ENV version 2.2.1
+
+RUN apt-get update \
+	&& apt-get -y install wget \
+	&& rm -rf /var/lib/apt/lists/*
+	
+RUN cd /tmp/ \
+	&& wget http://cole-trapnell-lab.github.io/cufflinks/assets/downloads/cufflinks-${version}.Linux_x86_64.tar.gz \
+	&& tar -xzvf cufflinks-${version}.Linux_x86_64.tar.gz \
+	&& cd cufflinks-${version}.Linux_x86_64 \
+	&& mv cufflinks /usr/local/bin/
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/Cufflinks-bash.sh && chmod 700 Cufflinks-bash.sh
+ENTRYPOINT ["Cufflinks-bash.sh"]
+
+
+

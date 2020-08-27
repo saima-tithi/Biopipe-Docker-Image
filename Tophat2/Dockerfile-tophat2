@@ -1,0 +1,31 @@
+FROM ubuntu:latest 
+
+ENV version 2.3.2 
+
+# download and install bowtie2
+RUN apt-get update \
+	&& apt-get -y install unzip wget libtbb-dev python \
+	&& rm -rf /var/lib/apt/lists/*
+RUN cd /tmp/ \
+	&& wget https://downloads.sourceforge.net/project/bowtie-bio/bowtie2/2.3.2/bowtie2-${version}-linux-x86_64.zip \
+	&& unzip bowtie2-2.3.2-linux-x86_64.zip \
+	&& rm -rf bowtie2-2.3.2-linux-x86_64.zip \
+	&& cd bowtie2-2.3.2/ \
+	&& mv bowtie2* /usr/local/bin/
+
+
+# download and install tophat2
+RUN cd /home/ \
+	&& wget https://ccb.jhu.edu/software/tophat/downloads/tophat-2.1.1.Linux_x86_64.tar.gz \
+        && tar -zxvf tophat-2.1.1.Linux_x86_64.tar.gz \
+        && rm -rf tophat-2.1.1.Linux_x86_64.tar.gz \
+        && cd /usr/local/bin/ \
+        && ln -s /home/tophat-2.1.1.Linux_x86_64/tophat2 .
+
+
+# download jq and make it executable
+ENV JQ http://stedolan.github.io/jq/download/linux64/jq 
+RUN cd /usr/local/bin && wget --quiet ${JQ} && chmod 700 jq	
+
+RUN cd /usr/local/bin && wget --quiet http://bench.cs.vt.edu/bash-scripts-for-docker/tophat2-bash.sh && chmod 700 tophat2-bash.sh
+ENTRYPOINT ["tophat2-bash.sh"]
